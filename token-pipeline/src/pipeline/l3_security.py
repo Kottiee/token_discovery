@@ -1,11 +1,11 @@
-from typing import List, Dict, Any
-from .base import PipelineLayer
-from src.db.repository import TokenRepository
-from src.clients.goplus import GoPlusClient
 import yaml
 from loguru import logger
 import json
 from datetime import datetime, timezone
+from typing import List, Dict, Any
+from .base import PipelineLayer
+from src.db.repository import TokenRepository
+from src.clients.goplus import GoPlusClient
 
 class L3Security(PipelineLayer):
     def __init__(self, repository: TokenRepository):
@@ -24,6 +24,8 @@ class L3Security(PipelineLayer):
 
         scanned_tokens = []
         rules = self.config["security"]
+        
+        logger.info(f"--- L3 Security Scan Start (Input: {len(input_data)}) ---")
         
         # Group by chain to batch requests
         tokens_by_chain = {}
@@ -62,6 +64,7 @@ class L3Security(PipelineLayer):
                     
                     for token_data in batch:
                         address = token_data["contract_address"]
+                        symbol = token_data.get("symbol", "UNKNOWN")
                         sec_info = normalized_results.get(address.lower())
 
                         if not sec_info:
@@ -86,18 +89,18 @@ class L3Security(PipelineLayer):
                         
                         if score < rules["drop_threshold"]:
                              self.repository.update_token_status(token_id, "dropped", "security_fail")
-                             logger.info(f"Dropped {token_id}: Security Score {score} < {rules['drop_threshold']}")
+                             logger.info(f"❌ [DROP] {symbol} ({token_id}): Score {score:.0f} < {rules['drop_threshold']} | Flags: {flags}")
                         else:
                              token_data["security_score"] = score
                              token_data["security_flags"] = flags
                              scanned_tokens.append(token_data)
-                             logger.info(f"Passed {token_id}: Security Score {score}")
+                             logger.info(f"✅ [PASS] {symbol} ({token_id}): Score {score:.0f} | Flags: {flags}")
 
                 except Exception as e:
                     logger.error(f"Error scanning batch on {chain}: {e}")
                     # Continue to next batch
         
-        logger.info(f"L3 Security Scan passed {len(scanned_tokens)} tokens.")
+        logger.info(f"--- L3 Security Scan End (Passed: {len(scanned_tokens)}) ---")
         return scanned_tokens
 
     def _calculate_score(self, sec_info: Dict[str, Any]) -> tuple[float, List[str]]:

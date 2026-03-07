@@ -8,6 +8,7 @@ from src.db import init_db, get_db
 from src.db.repository import TokenRepository
 from src.pipeline import L1Discovery, L2PreFilter, L3Security
 from src.utils.logger import setup_logger
+from src.utils.report import generate_report
 
 logger = setup_logger()
 
@@ -66,6 +67,9 @@ def main():
                 logger.info(f"Candidate: {token['symbol']} ({token['chain']}) - {token['contract_address']} (Score: {token.get('security_score')})")
         else:
             logger.info("Skipping L3 (No candidates).")
+            
+        # 7. Generate Report
+        generate_report(repository)
 
     except Exception as e:
         logger.error(f"Pipeline failed: {e}")

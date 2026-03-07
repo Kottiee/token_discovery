@@ -22,35 +22,45 @@ class L2PreFilter(PipelineLayer):
         filtered_tokens = []
         rules = self.config["prefilter"]
         
+        logger.info(f"--- L2 Pre-filter Start (Input: {len(input_data)}) ---")
+        
         for token_data in input_data:
             token_id = token_data["token_id"]
+            symbol = token_data.get("symbol", "UNKNOWN")
             
             # 1. Liquidity Check
-            if token_data["liquidity_usd"] < rules["min_liquidity_usd"]:
+            liquidity = token_data["liquidity_usd"]
+            if liquidity < rules["min_liquidity_usd"]:
+                reason = f"Low liquidity (${liquidity:,.2f} < ${rules['min_liquidity_usd']:,.2f})"
                 self.repository.update_token_status(token_id, "dropped", "low_liquidity")
-                logger.info(f"Dropped {token_id}: Low liquidity ({token_data['liquidity_usd']})")
+                logger.info(f"❌ [DROP] {symbol} ({token_id}): {reason}")
                 continue
             
             # 2. Activity Check
-            if token_data["txns_24h"] < rules["min_txns_24h"]:
+            txns = token_data["txns_24h"]
+            if txns < rules["min_txns_24h"]:
+                reason = f"Low activity ({txns} txns < {rules['min_txns_24h']} txns)"
                 self.repository.update_token_status(token_id, "dropped", "low_activity")
-                logger.info(f"Dropped {token_id}: Low activity ({token_data['txns_24h']} txns)")
+                logger.info(f"❌ [DROP] {symbol} ({token_id}): {reason}")
                 continue
 
             # 3. Cooldown Check (Waitlist)
-            if token_data["pool_age_minutes"] < rules["cooldown_minutes"]:
+            age = token_data["pool_age_minutes"]
+            if age < rules["cooldown_minutes"]:
                 # Add to waitlist
-                eligible_at = datetime.utcnow() + timedelta(minutes=rules["cooldown_minutes"] - token_data["pool_age_minutes"])
+                reason = f"Cooldown ({age:.1f} min < {rules['cooldown_minutes']} min)"
+                eligible_at = datetime.utcnow() + timedelta(minutes=rules["cooldown_minutes"] - age)
                 self.repository.add_to_waitlist(token_id, "cooldown", eligible_at)
                 self.repository.update_token_status(token_id, "watching", "cooldown")
-                logger.info(f"Waitlisted {token_id}: Cooldown ({token_data['pool_age_minutes']} min)")
+                logger.info(f"⏳ [WAIT] {symbol} ({token_id}): {reason}")
                 continue
 
             # 4. Volume Sustain (Skipped for simple MVP)
             
             # 5. Whale Concentration (Skipped for simple MVP)
 
+            logger.info(f"✅ [PASS] {symbol} ({token_id}): Liq=${liquidity:,.0f}, Txns={txns}, Age={age:.0f}m")
             filtered_tokens.append(token_data)
 
-        logger.info(f"L2 Pre-filter passed {len(filtered_tokens)} tokens.")
+        logger.info(f"--- L2 Pre-filter End (Passed: {len(filtered_tokens)}) ---")
         return filtered_tokens

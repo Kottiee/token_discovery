@@ -31,6 +31,8 @@ class L1Discovery(PipelineLayer):
         discovered_tokens = []
         chains_config = self._load_chains()["chains"]
         target_chains = self.config["pipeline"]["target_chains"]
+        
+        logger.info(f"--- L1 Discovery Start (Targets: {target_chains}) ---")
 
         # 1. GeckoTerminal: New Pools
         for chain in target_chains:
@@ -47,11 +49,15 @@ class L1Discovery(PipelineLayer):
             if not response or "data" not in response:
                 continue
 
+            chain_tokens = 0
             for item in response["data"]:
                 attrs = item["attributes"]
                 token_data = self._map_gecko_pool_to_token(chain, item)
                 if token_data:
                     discovered_tokens.append(token_data)
+                    chain_tokens += 1
+            
+            logger.info(f"  -> Found {chain_tokens} pools on {chain}")
 
         # 2. DexScreener: Trending/Boosted (Simplified for Phase 1)
         # TODO: Implement DexScreener fetching logic if needed for Phase 1
@@ -90,8 +96,13 @@ class L1Discovery(PipelineLayer):
                 token_data["token_id"] = token.id
                 token_data["pool_age_minutes"] = (datetime.now(timezone.utc) - token_data["pool_created_at"]).total_seconds() / 60
                 new_tokens.append(token_data)
+            else:
+                 # If existing but we want to re-process in L2 (e.g. status is active), we could add it.
+                 # For now, just logging.
+                 # logger.debug(f"Skipping known token: {token_data['symbol']}")
+                 pass
 
-        logger.info(f"L1 Discovery found {len(new_tokens)} new tokens.")
+        logger.info(f"--- L1 Discovery End (New: {len(new_tokens)}, Total Found: {len(discovered_tokens)}) ---")
         return new_tokens
 
     def _map_gecko_pool_to_token(self, chain: str, item: Dict[str, Any]) -> Dict[str, Any]:

@@ -1,0 +1,12 @@
+requests
+sqlalchemy
+pydantic
+pyyaml
+schedule
+loguru
+
+[dev]
+pytest
+black
+isort
+mypy

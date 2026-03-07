@@ -1,0 +1,31 @@
+pipeline:
+  schedule: "0 */4 * * *"    # 4時間ごとに実行
+  target_chains:
+    - solana
+    - ethereum
+    - base
+    - arbitrum
+    - bsc
+
+prefilter:
+  min_liquidity_usd: 5000
+  min_txns_24h: 10
+  cooldown_minutes: 60
+  max_single_wallet_share: 0.80
+  min_volume_sustain_hours: 6
+
+security:
+  drop_threshold: 40
+
+ranking:
+  weights:
+    security: 0.30
+    fundamentals: 0.20
+    narrative: 0.25
+    momentum: 0.15
+    community: 0.10
+  top_n: 10
+
+notifications:
+  discord_webhook_url: ""
+  notion_api_key: ""

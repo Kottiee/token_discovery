@@ -1,0 +1,22 @@
+[project]
+name = "token-pipeline"
+version = "0.1.0"
+description = "Token Discovery Pipeline"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "requests",
+    "sqlalchemy",
+    "pydantic",
+    "pyyaml",
+    "schedule",
+    "loguru",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "black",
+    "isort",
+    "mypy",
+]

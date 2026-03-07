@@ -1,0 +1,16 @@
+chains:
+  solana:
+    geckoterminal_id: "solana"
+    dexscreener_id: "solana"
+  ethereum:
+    geckoterminal_id: "eth"
+    dexscreener_id: "ethereum"
+  base:
+    geckoterminal_id: "base"
+    dexscreener_id: "base"
+  arbitrum:
+    geckoterminal_id: "arbitrum"
+    dexscreener_id: "arbitrum"
+  bsc:
+    geckoterminal_id: "bsc"
+    dexscreener_id: "bsc"

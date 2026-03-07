@@ -186,3 +186,87 @@
 2026-03-07 19:37:22.830 | INFO     | __main__:main:42 - Phase 1 Complete.
 2026-03-07 19:37:22.830 | INFO     | __main__:main:43 - Discovered: 20
 2026-03-07 19:37:22.830 | INFO     | __main__:main:44 - Passed Pre-filter: 0
+2026-03-07 20:04:03.494 | INFO     | __main__:main:15 - Starting Token Discovery Pipeline (Phase 2)...
+2026-03-07 20:04:03.499 | INFO     | __main__:main:19 - Database initialized.
+2026-03-07 20:04:03.499 | INFO     | __main__:main:28 - Running Layer 1: Discovery...
+2026-03-07 20:04:03.501 | INFO     | src.pipeline.l1_discovery:run:42 - Fetching new pools for solana (solana)...
+2026-03-07 20:04:05.614 | INFO     | src.pipeline.l1_discovery:run:42 - Fetching new pools for ethereum (eth)...
+2026-03-07 20:04:07.788 | INFO     | src.pipeline.l1_discovery:run:42 - Fetching new pools for base (base)...
+2026-03-07 20:04:09.941 | INFO     | src.pipeline.l1_discovery:run:42 - Fetching new pools for arbitrum (arbitrum)...
+2026-03-07 20:04:12.179 | INFO     | src.pipeline.l1_discovery:run:42 - Fetching new pools for bsc (bsc)...
+2026-03-07 20:04:14.367 | INFO     | src.pipeline.l1_discovery:run:94 - L1 Discovery found 65 new tokens.
+2026-03-07 20:04:14.367 | INFO     | __main__:main:43 - Running Layer 2: Pre-filter...
+2026-03-07 20:04:14.369 | INFO     | src.pipeline.l2_prefilter:run:37 - Dropped solana:2r2FX8URxp9uzXE6114yqAh7sFZCgNkJkB283bL6ZvXw: Low activity (1 txns)
+2026-03-07 20:04:14.370 | INFO     | src.pipeline.l2_prefilter:run:31 - Dropped solana:4Fp91XD7Tzjv6S8PvjT9RvFY8rQAaPk62AV2fN7hVQ21: Low liquidity (2475.21999819877)
+2026-03-07 20:04:14.371 | INFO     | src.pipeline.l2_prefilter:run:31 - Dropped solana:AxYQub9JC4usJzJvS41f9XB3ynu1Ero691XFTZtHs9gf: Low liquidity (2836.9453162252)
+2026-03-07 20:04:14.373 | INFO     | src.pipeline.l2_prefilter:run:46 - Waitlisted solana:42WFw22FQfu4aSMtVMvAyeFmWD7zKEWNhh6oAfMHkgaE: Cooldown (1.1047264833333335 min)
+2026-03-07 20:04:14.374 | INFO     | src.pipeline.l2_prefilter:run:31 - Dropped solana:2timsBxpRtaQtBdBbS61BLgPdHqSJbtopJEfEutmtbYn: Low liquidity (1871.79271301855)
+2026-03-07 20:04:14.375 | INFO     | src.pipeline.l2_prefilter:run:31 - Dropped solana:Fm5iCAmBjePdngcPWXpurnW8RhAT3Pjb6d55JY4iVcYJ: Low liquidity (1871.79269363331)
+2026-03-07 20:04:14.376 | INFO     | src.pipeline.l2_prefilter:run:31 - Dropped solana:4eEFQdggozwqLovCNSQDRwm6VkrLz1vAiAScKwZEZvXk: Low liquidity (1871.79271301855)
+2026-03-07 20:04:14.376 | INFO     | src.pipeline.l2_prefilter:run:31 - Dropped solana:7bbbqTFg15jq6u2a8E3fYyrr8UBk13YXAYUmy2XCaDGR: Low liquidity (1872.3472805425)
+2026-03-07 20:04:14.377 | INFO     | src.pipeline.l2_prefilter:run:31 - Dropped solana:6ugzLy5uxSvTs5Ua2FRYJEiHC9c6pPK3QNTHJmzAtwvy: Low liquidity (1877.30458862461)
+2026-03-07 20:04:14.379 | INFO     | src.pipeline.l2_prefilter:run:46 - Waitlisted solana:6Y7Xtp4kKFNcQUrDLzM6JJzex1Rx67Uw6ptdMd8MhSaH: Cooldown (1.3382189833333333 min)
+2026-03-07 20:04:14.380 | INFO     | src.pipeline.l2_prefilter:run:31 - Dropped solana:28qBJWbWud4oBcvwTz6caB6oRWbC4vLvrUUr8VthPWX5: Low liquidity (3920.0289)
+2026-03-07 20:04:14.382 | INFO     | src.pipeline.l2_prefilter:run:46 - Waitlisted solana:CYXW9D61yAFqHLWoSEBJpteKNKC5G6eaL2uwaxUQrX4y: Cooldown (1.4216073333333334 min)
+2026-03-07 20:04:14.382 | INFO     | src.pipeline.l2_prefilter:run:31 - Dropped solana:9y4daro3ZbBCKPNq2vjczRCrNbXdGZMSyUzX1t7P71ME: Low liquidity (1970.0986)
+2026-03-07 20:04:14.383 | INFO     | src.pipeline.l2_prefilter:run:31 - Dropped solana:DmwgbWuQx4nFHfyMV9LgTNNYohTT3HzdW6i3gDgqAmbZ: Low liquidity (1758.3718)
+2026-03-07 20:04:14.384 | INFO     | src.pipeline.l2_prefilter:run:31 - Dropped solana:2hLMUo37WKVDJu5h6jbc1vvp7ybGop3TcioQvkvcbuW8: Low liquidity (0.0591)
+2026-03-07 20:04:14.384 | INFO     | src.pipeline.l2_prefilter:run:31 - Dropped solana:F9tyMV42f45hoLvEh3XUT5KY7ZrwqnnQM5BnX6A8Drqv: Low liquidity (2320.8431)
+2026-03-07 20:04:14.386 | INFO     | src.pipeline.l2_prefilter:run:31 - Dropped solana:BxHy274vomNYExunpQ74rouUuGEeyccBgfNc2SkFg8Ko: Low liquidity (1914.7793)
+2026-03-07 20:04:14.395 | INFO     | src.pipeline.l2_prefilter:run:31 - Dropped solana:A4MRBPr7f77VYwZvYjbFhxNM1FFgJoiMQjxBdcjzVNdX: Low liquidity (1878.49855473198)
+2026-03-07 20:04:14.397 | INFO     | src.pipeline.l2_prefilter:run:31 - Dropped solana:AHESaVvWXeb3KsTMKjecrf4nWZiApqPJgverxbLBZU1M: Low liquidity (2062.4095)
+2026-03-07 20:04:14.398 | INFO     | src.pipeline.l2_prefilter:run:31 - Dropped solana:GQ6fXGdppkUCsUGSKVcVXAsVwLypPECpewwUQAGLJUad: Low liquidity (0.076)
+2026-03-07 20:04:14.399 | INFO     | src.pipeline.l2_prefilter:run:46 - Waitlisted ethereum:0x4f5b489f717cbd5773a3b9bcd61cc2b6c84e2768: Cooldown (15.25514225 min)
+2026-03-07 20:04:14.400 | INFO     | src.pipeline.l2_prefilter:run:31 - Dropped ethereum:0x29b4fc9b6163d4e761584cfa1daf700be83f714d33a19be9d2076d01219bbdbb: Low liquidity (0.5954)
+2026-03-07 20:04:14.402 | INFO     | src.pipeline.l2_prefilter:run:46 - Waitlisted ethereum:0x8b17e5ff743dbbe2c884a410056a477f4303d177: Cooldown (21.855197316666665 min)
+2026-03-07 20:04:14.404 | INFO     | src.pipeline.l2_prefilter:run:46 - Waitlisted ethereum:0x1d241f787de82af80898a99fa76aa41d14fc2965: Cooldown (25.855220616666667 min)
+2026-03-07 20:04:14.405 | INFO     | src.pipeline.l2_prefilter:run:31 - Dropped base:0x45daffd60a9fb346cf1fdc6675975ad80a57c6a8: Low liquidity (3967.7)
+2026-03-07 20:04:14.406 | INFO     | src.pipeline.l2_prefilter:run:31 - Dropped base:0x672c21a48ce7784877c84ca52a0685d87854ee02: Low liquidity (0.3968)
+2026-03-07 20:04:14.407 | INFO     | src.pipeline.l2_prefilter:run:31 - Dropped base:0xc0223ef748e334db41480798d9ee4f99cc1036d6: Low liquidity (0.3968)
+2026-03-07 20:04:14.408 | INFO     | src.pipeline.l2_prefilter:run:31 - Dropped base:0xac1cb503a264e670a2f8c3fbddeb0a790cee4fa4: Low liquidity (0.398340461752146)
+2026-03-07 20:04:14.408 | INFO     | src.pipeline.l2_prefilter:run:31 - Dropped base:0xd11eb9e1751653896a7e222c0309a761aa944d2c: Low liquidity (0.002136424719)
+2026-03-07 20:04:14.409 | INFO     | src.pipeline.l2_prefilter:run:31 - Dropped base:0x519a7b7e95f0f46ef2058d5d31249b96f910c428: Low liquidity (1337.4712)
+2026-03-07 20:04:14.411 | INFO     | src.pipeline.l2_prefilter:run:31 - Dropped base:0xd28869eb7efd7da5048537fb0da5c6b23df7a8bb: Low liquidity (0.3968)
+2026-03-07 20:04:14.412 | INFO     | src.pipeline.l2_prefilter:run:31 - Dropped base:0x8e7d75d161f1c4aa7f134947abe6a7353e34ce03: Low liquidity (0.3968)
+2026-03-07 20:04:14.413 | INFO     | src.pipeline.l2_prefilter:run:31 - Dropped base:0x2835555d667691c71359882abd2b10c9ecf189a0: Low liquidity (1440.8267)
+2026-03-07 20:04:14.415 | INFO     | src.pipeline.l2_prefilter:run:37 - Dropped base:0xb8ac0ea8f917f48e54e2f6ee36c3c806fc34c286: Low activity (8 txns)
+2026-03-07 20:04:14.416 | INFO     | src.pipeline.l2_prefilter:run:31 - Dropped base:0x5f5a74916278191afb05860d0da64722cb6cf9b8: Low liquidity (0.3968)
+2026-03-07 20:04:14.417 | INFO     | src.pipeline.l2_prefilter:run:31 - Dropped base:0x82b0137ec588ee6b014c5f077e6391d43b2df82b: Low liquidity (0.3968)
+2026-03-07 20:04:14.419 | INFO     | src.pipeline.l2_prefilter:run:31 - Dropped base:0x26b8ee7a4a5c78ac96bd959f1a459bcc31ed3e62: Low liquidity (0.3968)
+2026-03-07 20:04:14.427 | INFO     | src.pipeline.l2_prefilter:run:46 - Waitlisted base:0x2c558655b939350fb4da97d4c8214d7637a1748b: Cooldown (3.2222119166666667 min)
+2026-03-07 20:04:14.430 | INFO     | src.pipeline.l2_prefilter:run:31 - Dropped base:0xb68c3ed96658954f346ed9465839b4a74ea84bb2: Low liquidity (0.3968)
+2026-03-07 20:04:14.439 | INFO     | src.pipeline.l2_prefilter:run:31 - Dropped base:0xd3bc2862c5cd83e40739d976bdeb30e69a89f0d1: Low liquidity (3968.08)
+2026-03-07 20:04:14.440 | INFO     | src.pipeline.l2_prefilter:run:31 - Dropped base:0x9a9abbd670673620ce72bc271204b9ee8b4abecc: Low liquidity (3.96758e-15)
+2026-03-07 20:04:14.441 | INFO     | src.pipeline.l2_prefilter:run:31 - Dropped base:0xf008cd6c4398ff7788bf54125fe502f395a0b3e5: Low liquidity (0.3968)
+2026-03-07 20:04:14.442 | INFO     | src.pipeline.l2_prefilter:run:31 - Dropped base:0x233ed56efd784db2f9cd210e91b288beb7a26017: Low liquidity (0.3968)
+2026-03-07 20:04:14.443 | INFO     | src.pipeline.l2_prefilter:run:37 - Dropped base:0x84cb85020553083b6723495ddef522d1729bb9b5f9eaf563f9246cdde5fa364f: Low activity (2 txns)
+2026-03-07 20:04:14.446 | INFO     | src.pipeline.l2_prefilter:run:46 - Waitlisted bsc:0xc489e3e70aca94f32c6425f9d5e2d9b13e8cd75f: Cooldown (2.1557398500000002 min)
+2026-03-07 20:04:14.447 | INFO     | src.pipeline.l2_prefilter:run:31 - Dropped bsc:0x52696d61fab5df529f32e9874c107dcd971123cd: Low liquidity (2000.4241)
+2026-03-07 20:04:14.449 | INFO     | src.pipeline.l2_prefilter:run:46 - Waitlisted bsc:0xc027e6f1c64621c314bfb11b3300bc40dca46bd2: Cooldown (4.589118083333333 min)
+2026-03-07 20:04:14.450 | INFO     | src.pipeline.l2_prefilter:run:37 - Dropped bsc:0x348adb09d2867dd37f413050eb2492e3c23bae54: Low activity (9 txns)
+2026-03-07 20:04:14.451 | INFO     | src.pipeline.l2_prefilter:run:46 - Waitlisted bsc:0x6482c35445bd49d7bed77b45729fdb6a7f6a0a03: Cooldown (5.422491566666666 min)
+2026-03-07 20:04:14.452 | INFO     | src.pipeline.l2_prefilter:run:31 - Dropped bsc:0xb8d18cf92df9ed8c1dc010ee3b4c330ead249351: Low liquidity (2107.3414)
+2026-03-07 20:04:14.453 | INFO     | src.pipeline.l2_prefilter:run:31 - Dropped bsc:0xb0f5c838ac6d81a3be8866ef0b225515f95e4444: Low liquidity (2910.8984)
+2026-03-07 20:04:14.453 | INFO     | src.pipeline.l2_prefilter:run:31 - Dropped bsc:0x3dbeb841afb3e498ce4aa4e468c1fe37d7387339: Low liquidity (0.004223825616)
+2026-03-07 20:04:14.454 | INFO     | src.pipeline.l2_prefilter:run:31 - Dropped bsc:0x291f9675e5b34792ab02f630a09ab21c72788c1f: Low liquidity (0.1253)
+2026-03-07 20:04:14.454 | INFO     | src.pipeline.l2_prefilter:run:31 - Dropped bsc:0x09041b25aa09fbe412ab46e57d337fa53323cbf9: Low liquidity (0.1253)
+2026-03-07 20:04:14.455 | INFO     | src.pipeline.l2_prefilter:run:31 - Dropped bsc:0x821781ca6facb2d22931c5d3e9bbb9d94b47313e: Low liquidity (0.0002316955847)
+2026-03-07 20:04:14.456 | INFO     | src.pipeline.l2_prefilter:run:31 - Dropped bsc:0x81cac905c2b4438cad5a6d1058e268774dc6ceee: Low liquidity (0.008936068257)
+2026-03-07 20:04:14.457 | INFO     | src.pipeline.l2_prefilter:run:31 - Dropped bsc:0x7e4352867b8d546f703e2bf6d9a3a6fdbe932f09: Low liquidity (0.001926892339)
+2026-03-07 20:04:14.458 | INFO     | src.pipeline.l2_prefilter:run:31 - Dropped bsc:0xa88766e7a142ad39d12c17d71dda33be9bcb7544: Low liquidity (0.1253)
+2026-03-07 20:04:14.458 | INFO     | src.pipeline.l2_prefilter:run:31 - Dropped bsc:0xf3a3d7458ed5fbabfee3030ef2040f528a500316: Low liquidity (0.00988946098)
+2026-03-07 20:04:14.459 | INFO     | src.pipeline.l2_prefilter:run:31 - Dropped bsc:0xae45c79afc33bd808b52bd05dc5100de430d4b0c: Low liquidity (56.1487)
+2026-03-07 20:04:14.460 | INFO     | src.pipeline.l2_prefilter:run:31 - Dropped bsc:0x89529fee47b6ecf226624d432d3a255dd6319585: Low liquidity (0.188)
+2026-03-07 20:04:14.461 | INFO     | src.pipeline.l2_prefilter:run:31 - Dropped bsc:0x5fa45a413c0fe6d4ab10cae5154182ca33e30543: Low liquidity (0.0627)
+2026-03-07 20:04:14.461 | INFO     | src.pipeline.l2_prefilter:run:31 - Dropped bsc:0xf112d6f3329dfd83eaf398f07b13406e8e39cd92: Low liquidity (0.000811498785)
+2026-03-07 20:04:14.462 | INFO     | src.pipeline.l2_prefilter:run:31 - Dropped bsc:0xaafe589f0474b7c2b1c75e5020f0972131dddd19: Low liquidity (0.0004977148256)
+2026-03-07 20:04:14.462 | INFO     | src.pipeline.l2_prefilter:run:55 - L2 Pre-filter passed 1 tokens.
+2026-03-07 20:04:14.462 | INFO     | __main__:main:55 - Running Layer 3: Security Scan...
+2026-03-07 20:04:14.463 | INFO     | src.pipeline.l3_security:run:37 - Running Security Scan for 1 tokens on arbitrum...
+2026-03-07 20:04:14.617 | INFO     | src.pipeline.l3_security:run:94 - Passed arbitrum:0x1deee295f0a7c7e4006c47fe60d072cabf7f047a: Security Score 80.0
+2026-03-07 20:04:14.617 | INFO     | src.pipeline.l3_security:run:100 - L3 Security Scan passed 1 tokens.
+2026-03-07 20:04:14.617 | INFO     | __main__:main:60 - Phase 2 Complete.
+2026-03-07 20:04:14.617 | INFO     | __main__:main:61 - Discovered: 65
+2026-03-07 20:04:14.617 | INFO     | __main__:main:62 - Passed Pre-filter: 1
+2026-03-07 20:04:14.617 | INFO     | __main__:main:63 - Passed Security Scan: 1
+2026-03-07 20:04:14.617 | INFO     | __main__:main:66 - Candidate: POLY (arbitrum) - 0x1deee295f0a7c7e4006c47fe60d072cabf7f047a (Score: 80.0)

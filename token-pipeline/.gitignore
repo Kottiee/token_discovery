@@ -1,0 +1,47 @@
+# Python
+# token-pipeline/src/pipeline直下の__pycache__も除外
+token-pipeline/src/pipeline/__pycache__/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+.venv/
+venv/
+env/
+ENV/
+
+# Distribution / Packaging
+dist/
+build/
+*.egg-info/
+
+# Unit Test / Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+
+# Logs
+*.log
+
+# Database
+*.db
+*.sqlite3
+
+# Environment Variables
+.env
+.env.local
+.env.*.local
+
+# IDE / Editor
+.idea/
+.vscode/
+*.swp
+
+# Mac
+.DS_Store
+
+# Project specific
+token_pipeline.db
+token_pipeline.log

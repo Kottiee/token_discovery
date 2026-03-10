@@ -9,14 +9,20 @@ dependencies = [
     "sqlalchemy",
     "pydantic",
     "pyyaml",
-    "schedule",
+    "apscheduler>=3.10",
     "loguru",
+    "anthropic>=0.40",
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest",
+    "pytest-cov",
     "black",
     "isort",
     "mypy",
+    "responses",
 ]
+
+[project.scripts]
+token-pipeline = "src.main:main"

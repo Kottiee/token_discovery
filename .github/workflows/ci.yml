@@ -83,10 +83,26 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # Check if FLY_API_TOKEN is configured — skip deploy gracefully if not.
+      # To enable: add FLY_API_TOKEN to repository secrets (Settings → Secrets).
+      - name: Check for Fly.io token
+        id: token_check
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          if [ -z "$FLY_API_TOKEN" ]; then
+            echo "FLY_API_TOKEN not configured — skipping deploy."
+            echo "has_token=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_token=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Set up Fly CLI
+        if: steps.token_check.outputs.has_token == 'true'
         uses: superfly/flyctl-actions/setup-flyctl@master
 
       - name: Deploy
+        if: steps.token_check.outputs.has_token == 'true'
         run: flyctl deploy --remote-only
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}

@@ -1,7 +1,9 @@
 """Unit tests for L6 Ranking layer."""
-import pytest
-from unittest.mock import MagicMock, patch
+
 from datetime import date
+from unittest.mock import MagicMock, patch
+
+import pytest
 
 
 def _make_scored_token(
@@ -55,6 +57,7 @@ def l6(mock_repo):
     }
 
     from src.pipeline.l6_ranking import L6Ranking
+
     inst = L6Ranking.__new__(L6Ranking)
     inst.repository = mock_repo
     inst.claude = mock_claude
@@ -64,7 +67,9 @@ def l6(mock_repo):
 
 class TestL6Ranking:
     def test_total_score_calculation(self, l6):
-        token = _make_scored_token(security=100, fundamentals=100, narrative=100, community=100)
+        token = _make_scored_token(
+            security=100, fundamentals=100, narrative=100, community=100
+        )
         # momentum computed internally from liquidity/volume
         total, breakdown = l6._compute_total_score(
             token, l6.config["ranking"]["weights"]
@@ -76,9 +81,15 @@ class TestL6Ranking:
     def test_ranking_order(self, l6):
         """Tokens should be returned in descending score order."""
         tokens = [
-            _make_scored_token("eth:A", "A", security=50, fundamentals=50, narrative=50, community=50),
-            _make_scored_token("eth:B", "B", security=90, fundamentals=80, narrative=80, community=70),
-            _make_scored_token("eth:C", "C", security=70, fundamentals=60, narrative=60, community=60),
+            _make_scored_token(
+                "eth:A", "A", security=50, fundamentals=50, narrative=50, community=50
+            ),
+            _make_scored_token(
+                "eth:B", "B", security=90, fundamentals=80, narrative=80, community=70
+            ),
+            _make_scored_token(
+                "eth:C", "C", security=70, fundamentals=60, narrative=60, community=60
+            ),
         ]
         results = l6.run(tokens)
         ranks = [r["rank"] for r in results]
@@ -89,9 +100,7 @@ class TestL6Ranking:
     def test_top_n_limit(self, l6):
         """Only top_n tokens should be returned."""
         l6.config["ranking"]["top_n"] = 2
-        tokens = [
-            _make_scored_token(f"eth:{i}", f"T{i}") for i in range(5)
-        ]
+        tokens = [_make_scored_token(f"eth:{i}", f"T{i}") for i in range(5)]
         results = l6.run(tokens)
         assert len(results) == 2
 

@@ -2,25 +2,32 @@
 Integration test: Full pipeline run against in-memory SQLite DB.
 External APIs are mocked so this test runs offline.
 """
-import pytest
-from unittest.mock import MagicMock, patch
-from datetime import datetime, timezone, timedelta
 
+from datetime import datetime, timedelta, timezone
+from unittest.mock import MagicMock, patch
+
+import pytest
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, scoped_session
+from sqlalchemy.orm import scoped_session, sessionmaker
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Fixtures
 # ──────────────────────────────────────────────────────────────────────────────
 
+
 @pytest.fixture(scope="module")
 def in_memory_db():
     """Create a fresh in-memory SQLite database for the test session."""
-    from src.db import Base
     from src.db import models  # ensure all models are registered
-    engine = create_engine("sqlite:///:memory:", connect_args={"check_same_thread": False})
+    from src.db import Base
+
+    engine = create_engine(
+        "sqlite:///:memory:", connect_args={"check_same_thread": False}
+    )
     Base.metadata.create_all(bind=engine)
-    Session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
+    Session = scoped_session(
+        sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    )
     yield Session
     Session.remove()
     engine.dispose()
@@ -29,6 +36,7 @@ def in_memory_db():
 @pytest.fixture
 def repo(in_memory_db):
     from src.db.repository import TokenRepository
+
     db = in_memory_db()
     yield TokenRepository(db)
     db.close()
@@ -37,6 +45,7 @@ def repo(in_memory_db):
 # ──────────────────────────────────────────────────────────────────────────────
 # Mock data helpers
 # ──────────────────────────────────────────────────────────────────────────────
+
 
 def _gecko_new_pools_response():
     return {
@@ -86,6 +95,7 @@ def _goplus_response(address):
 # Test
 # ──────────────────────────────────────────────────────────────────────────────
 
+
 class TestPipelineE2E:
     @patch("src.clients.gecko_terminal.GeckoTerminalClient.get_new_pools")
     @patch("src.clients.goplus.GoPlusClient.token_security")
@@ -124,38 +134,50 @@ class TestPipelineE2E:
         }
         mock_claude_summary.return_value = "Solid DeFi project on Ethereum."
 
-        # Run L1
-        with patch("yaml.safe_load") as mock_yaml:
-            mock_yaml.return_value = {
-                "pipeline": {
-                    "target_chains": ["ethereum"],
-                    "schedule": "0 */4 * * *",
+        _FAKE_SETTINGS = {
+            "pipeline": {
+                "target_chains": ["ethereum"],
+                "schedule": "0 */4 * * *",
+            },
+            "prefilter": {
+                "min_liquidity_usd": 5000,
+                "min_txns_24h": 10,
+                "cooldown_minutes": 60,
+            },
+            "security": {"drop_threshold": 40},
+            "ranking": {
+                "weights": {
+                    "security": 0.30,
+                    "fundamentals": 0.20,
+                    "narrative": 0.25,
+                    "momentum": 0.15,
+                    "community": 0.10,
                 },
-                "prefilter": {
-                    "min_liquidity_usd": 5000,
-                    "min_txns_24h": 10,
-                    "cooldown_minutes": 60,
-                },
-                "security": {"drop_threshold": 40},
-                "ranking": {
-                    "weights": {
-                        "security": 0.30,
-                        "fundamentals": 0.20,
-                        "narrative": 0.25,
-                        "momentum": 0.15,
-                        "community": 0.10,
-                    },
-                    "top_n": 10,
-                },
-                "fundamentals": {"enabled": True},
-                "sentiment": {"enabled": True, "hot_narratives": []},
-                "notifications": {},
+                "top_n": 10,
+            },
+            "fundamentals": {"enabled": True},
+            "sentiment": {"enabled": True, "hot_narratives": []},
+            "notifications": {},
+        }
+        _FAKE_CHAINS = {
+            "chains": {
+                "ethereum": {
+                    "geckoterminal_id": "eth",
+                    "dexscreener_id": "ethereum",
+                }
             }
+        }
 
-            with patch("src.clients.gecko_terminal.GeckoTerminalClient.get_new_pools", mock_gecko):
-                from src.pipeline import L1Discovery, L2PreFilter, L3Security
-                l1 = L1Discovery(repo)
-                l1_results = l1.run()
+        # Run L1 — patch _load_config/_load_chains directly so chains.yaml is not affected
+        from src.pipeline import L1Discovery, L2PreFilter, L3Security
+
+        with (
+            patch.object(L1Discovery, "_load_config", return_value=_FAKE_SETTINGS),
+            patch.object(L1Discovery, "_load_chains", return_value=_FAKE_CHAINS),
+            patch.object(L2PreFilter, "_load_config", return_value=_FAKE_SETTINGS),
+        ):
+            l1 = L1Discovery(repo)
+            l1_results = l1.run()
 
             assert len(l1_results) > 0, "L1 should discover at least one token"
 
@@ -179,28 +201,33 @@ class TestPipelineE2E:
     def test_repository_crud(self, repo):
         """Sanity-check CRUD operations on in-memory DB."""
         from datetime import datetime, timezone
-        token = repo.create_token({
-            "id": "eth:0xTEST",
-            "chain": "ethereum",
-            "contract_address": "0xTEST",
-            "name": "Test",
-            "symbol": "TST",
-            "status": "active",
-            "discovered_at": datetime.now(timezone.utc),
-        })
+
+        token = repo.create_token(
+            {
+                "id": "eth:0xTEST",
+                "chain": "ethereum",
+                "contract_address": "0xTEST",
+                "name": "Test",
+                "symbol": "TST",
+                "status": "active",
+                "discovered_at": datetime.now(timezone.utc),
+            }
+        )
         assert token.id == "eth:0xTEST"
 
         updated = repo.update_token_status("eth:0xTEST", "dropped", "low_liquidity")
         assert updated.status == "dropped"
 
-        repo.add_scan_result({
-            "token_id": "eth:0xTEST",
-            "layer": "L3",
-            "score": 75.0,
-            "details": {"test": True},
-            "flags": [],
-            "scanned_at": datetime.now(timezone.utc),
-        })
+        repo.add_scan_result(
+            {
+                "token_id": "eth:0xTEST",
+                "layer": "L3",
+                "score": 75.0,
+                "details": {"test": True},
+                "flags": [],
+                "scanned_at": datetime.now(timezone.utc),
+            }
+        )
 
         scan = repo.get_latest_scan("eth:0xTEST", "L3")
         assert scan is not None
@@ -208,16 +235,19 @@ class TestPipelineE2E:
 
     def test_waitlist_lifecycle(self, repo):
         """Token added to waitlist should be retrievable and removable."""
-        from datetime import datetime, timezone, timedelta
-        repo.create_token({
-            "id": "sol:0xWAIT",
-            "chain": "solana",
-            "contract_address": "0xWAIT",
-            "name": "Wait Token",
-            "symbol": "WAIT",
-            "status": "watching",
-            "discovered_at": datetime.now(timezone.utc),
-        })
+        from datetime import datetime, timedelta, timezone
+
+        repo.create_token(
+            {
+                "id": "sol:0xWAIT",
+                "chain": "solana",
+                "contract_address": "0xWAIT",
+                "name": "Wait Token",
+                "symbol": "WAIT",
+                "status": "watching",
+                "discovered_at": datetime.now(timezone.utc),
+            }
+        )
 
         eligible_at = datetime.utcnow() - timedelta(seconds=1)  # already eligible
         repo.add_to_waitlist("sol:0xWAIT", "cooldown", eligible_at)

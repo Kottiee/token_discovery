@@ -1,8 +1,8 @@
-import requests
-from typing import List, Dict, Any
 from datetime import date
-from loguru import logger
+from typing import Any, Dict, List
 
+import requests
+from loguru import logger
 
 RANK_MEDALS = ["🥇", "🥈", "🥉"] + ["🏅"] * 7
 CHAIN_ICONS = {
@@ -97,10 +97,16 @@ class DiscordNotifier:
             fields.append({"name": "Risk Flags", "value": flag_text, "inline": False})
 
         if dex_url:
-            fields.append({"name": "Chart", "value": f"[DEXScreener]({dex_url})", "inline": True})
+            fields.append(
+                {"name": "Chart", "value": f"[DEXScreener]({dex_url})", "inline": True}
+            )
 
         # Color: green if score ≥ 70, yellow if ≥ 50, red otherwise
-        color = 0x57F287 if total_score >= 70 else (0xFEE75C if total_score >= 50 else 0xED4245)
+        color = (
+            0x57F287
+            if total_score >= 70
+            else (0xFEE75C if total_score >= 50 else 0xED4245)
+        )
 
         return {
             "title": f"{medal} #{rank}. ${symbol}",

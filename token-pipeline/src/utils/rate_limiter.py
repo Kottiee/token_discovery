@@ -1,5 +1,6 @@
-import time
 import threading
+import time
+
 
 class RateLimiter:
     def __init__(self, rate_limit: int, period: int = 60):

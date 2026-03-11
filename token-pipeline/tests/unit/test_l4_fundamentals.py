@@ -1,6 +1,8 @@
 """Unit tests for L4 Fundamentals layer."""
-import pytest
+
 from unittest.mock import MagicMock, patch
+
+import pytest
 
 
 def _make_token(token_id="eth:0xABC", symbol="TEST"):
@@ -21,23 +23,34 @@ def _make_token(token_id="eth:0xABC", symbol="TEST"):
 class TestExtractGithubOwnerRepo:
     def test_standard_url(self):
         from src.pipeline.l4_fundamentals import _extract_github_owner_repo
-        assert _extract_github_owner_repo("https://github.com/owner/repo") == ("owner", "repo")
+
+        assert _extract_github_owner_repo("https://github.com/owner/repo") == (
+            "owner",
+            "repo",
+        )
 
     def test_url_with_git_suffix(self):
         from src.pipeline.l4_fundamentals import _extract_github_owner_repo
-        assert _extract_github_owner_repo("https://github.com/owner/repo.git") == ("owner", "repo")
+
+        assert _extract_github_owner_repo("https://github.com/owner/repo.git") == (
+            "owner",
+            "repo",
+        )
 
     def test_url_with_trailing_slash(self):
         from src.pipeline.l4_fundamentals import _extract_github_owner_repo
+
         result = _extract_github_owner_repo("https://github.com/owner/repo/")
         assert result == ("owner", "repo")
 
     def test_non_github_url(self):
         from src.pipeline.l4_fundamentals import _extract_github_owner_repo
+
         assert _extract_github_owner_repo("https://example.com/owner/repo") is None
 
     def test_none_input(self):
         from src.pipeline.l4_fundamentals import _extract_github_owner_repo
+
         assert _extract_github_owner_repo(None) is None
 
 
@@ -68,13 +81,17 @@ class TestL4Fundamentals:
         }
 
         with patch("yaml.safe_load", return_value={"fundamentals": {"enabled": True}}):
-            with patch("builtins.open", MagicMock(
-                return_value=MagicMock(
-                    __enter__=lambda s: s,
-                    __exit__=MagicMock(return_value=False),
-                )
-            )):
+            with patch(
+                "builtins.open",
+                MagicMock(
+                    return_value=MagicMock(
+                        __enter__=lambda s: s,
+                        __exit__=MagicMock(return_value=False),
+                    )
+                ),
+            ):
                 from src.pipeline.l4_fundamentals import L4Fundamentals
+
                 inst = L4Fundamentals.__new__(L4Fundamentals)
                 inst.repository = mock_repo
                 inst.github = mock_github

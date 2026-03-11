@@ -1,7 +1,9 @@
+from datetime import date, datetime
+from typing import Any, Dict, List, Optional
+
 from sqlalchemy.orm import Session
-from .models import Token, Pool, PipelineRun, ScanResult, DailyRanking, WaitList
-from typing import List, Optional, Dict, Any
-from datetime import datetime, date
+
+from .models import DailyRanking, PipelineRun, Pool, ScanResult, Token, WaitList
 
 
 class TokenRepository:
@@ -11,9 +13,7 @@ class TokenRepository:
     # ── Token ──────────────────────────────────────────────────────────────
 
     def get_token(self, chain: str, address: str) -> Optional[Token]:
-        return self.db.query(Token).filter(
-            Token.id == f"{chain}:{address}"
-        ).first()
+        return self.db.query(Token).filter(Token.id == f"{chain}:{address}").first()
 
     def get_token_by_id(self, token_id: str) -> Optional[Token]:
         return self.db.query(Token).filter(Token.id == token_id).first()
@@ -119,11 +119,7 @@ class TokenRepository:
     def get_eligible_waitlist_tokens(self) -> List[WaitList]:
         """Return waitlist entries whose cooldown has expired."""
         now = datetime.utcnow()
-        return (
-            self.db.query(WaitList)
-            .filter(WaitList.eligible_at <= now)
-            .all()
-        )
+        return self.db.query(WaitList).filter(WaitList.eligible_at <= now).all()
 
     def remove_from_waitlist(self, token_id: str) -> None:
         self.db.query(WaitList).filter(WaitList.token_id == token_id).delete()
@@ -184,6 +180,7 @@ class TokenRepository:
     def cleanup_old_dropped(self, days: int = 30) -> int:
         """Delete dropped tokens older than N days. Returns deleted count."""
         from datetime import timedelta
+
         cutoff = datetime.utcnow() - timedelta(days=days)
         result = (
             self.db.query(Token)

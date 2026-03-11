@@ -1,7 +1,9 @@
 """Unit tests for L2 Pre-filter layer."""
-import pytest
-from unittest.mock import MagicMock, patch
+
 from datetime import datetime, timezone
+from unittest.mock import MagicMock, patch
+
+import pytest
 
 
 def _make_token(
@@ -33,19 +35,28 @@ def mock_repo():
 
 @pytest.fixture
 def l2(mock_repo):
-    with patch("builtins.open", MagicMock(return_value=MagicMock(
-        __enter__=lambda s: s,
-        __exit__=MagicMock(return_value=False),
-        read=MagicMock(return_value=""),
-    ))):
-        with patch("yaml.safe_load", return_value={
-            "prefilter": {
-                "min_liquidity_usd": 5000,
-                "min_txns_24h": 10,
-                "cooldown_minutes": 60,
-            }
-        }):
+    with patch(
+        "builtins.open",
+        MagicMock(
+            return_value=MagicMock(
+                __enter__=lambda s: s,
+                __exit__=MagicMock(return_value=False),
+                read=MagicMock(return_value=""),
+            )
+        ),
+    ):
+        with patch(
+            "yaml.safe_load",
+            return_value={
+                "prefilter": {
+                    "min_liquidity_usd": 5000,
+                    "min_txns_24h": 10,
+                    "cooldown_minutes": 60,
+                }
+            },
+        ):
             from src.pipeline.l2_prefilter import L2PreFilter
+
             return L2PreFilter(mock_repo)
 
 
@@ -87,9 +98,11 @@ class TestL2PreFilter:
 
     def test_multiple_tokens_mixed(self, l2, mock_repo):
         tokens = [
-            _make_token(token_id="eth:A", symbol="A", liquidity=10000, txns=50, age_minutes=120),
-            _make_token(token_id="eth:B", symbol="B", liquidity=100),   # dropped
-            _make_token(token_id="eth:C", symbol="C", txns=5),          # dropped
+            _make_token(
+                token_id="eth:A", symbol="A", liquidity=10000, txns=50, age_minutes=120
+            ),
+            _make_token(token_id="eth:B", symbol="B", liquidity=100),  # dropped
+            _make_token(token_id="eth:C", symbol="C", txns=5),  # dropped
         ]
         result = l2.run(tokens)
         assert len(result) == 1

@@ -1,14 +1,18 @@
-import os
 import json
-from typing import Dict, Any, Optional
+import os
+from typing import Any, Dict, Optional
+
 from loguru import logger
 
 try:
     import anthropic
+
     _ANTHROPIC_AVAILABLE = True
 except ImportError:
     _ANTHROPIC_AVAILABLE = False
-    logger.warning("anthropic package not installed — Claude AI analysis will be skipped")
+    logger.warning(
+        "anthropic package not installed — Claude AI analysis will be skipped"
+    )
 
 
 FUNDAMENTALS_SYSTEM = """You are a DeFi project analyst. Analyze the provided token project information and return a JSON object with the following fields:
@@ -52,9 +56,13 @@ class ClaudeAgent:
         if _ANTHROPIC_AVAILABLE and self.api_key:
             self.client = anthropic.Anthropic(api_key=self.api_key)
         elif not self.api_key:
-            logger.warning("ANTHROPIC_API_KEY not set — Claude AI analysis will use fallback scores")
+            logger.warning(
+                "ANTHROPIC_API_KEY not set — Claude AI analysis will use fallback scores"
+            )
 
-    def _chat(self, system: str, user_content: str, max_tokens: int = 500) -> Optional[str]:
+    def _chat(
+        self, system: str, user_content: str, max_tokens: int = 500
+    ) -> Optional[str]:
         """Send a message to Claude and return the text response."""
         if not self.client:
             return None
@@ -109,7 +117,9 @@ class ClaudeAgent:
         result = self._parse_json(response)
 
         if result:
-            logger.debug(f"Claude fundamentals for {token_symbol}: score={result.get('ai_analysis_score')}")
+            logger.debug(
+                f"Claude fundamentals for {token_symbol}: score={result.get('ai_analysis_score')}"
+            )
             return result
 
         # Fallback: conservative defaults when Claude unavailable
@@ -144,7 +154,9 @@ class ClaudeAgent:
         result = self._parse_json(response)
 
         if result:
-            logger.debug(f"Claude narrative for {token_symbol}: category={result.get('narrative_category')}")
+            logger.debug(
+                f"Claude narrative for {token_symbol}: category={result.get('narrative_category')}"
+            )
             return result
 
         return {

@@ -1,9 +1,11 @@
-import os
-import requests
-from typing import Dict, Any, Optional
-from src.utils.rate_limiter import RateLimiter
-from loguru import logger
 import math
+import os
+from typing import Any, Dict, Optional
+
+import requests
+from loguru import logger
+
+from src.utils.rate_limiter import RateLimiter
 
 
 class GitHubClient:
@@ -40,7 +42,9 @@ class GitHubClient:
 
     def search_repo(self, query: str) -> Optional[Dict]:
         """Search for a repository by project name."""
-        data = self._get("/search/repositories", params={"q": query, "sort": "stars", "per_page": 1})
+        data = self._get(
+            "/search/repositories", params={"q": query, "sort": "stars", "per_page": 1}
+        )
         if data and data.get("total_count", 0) > 0:
             return data["items"][0]
         return None
@@ -51,10 +55,10 @@ class GitHubClient:
     def get_commits(self, owner: str, repo: str, since_days: int = 30) -> int:
         """Return number of commits in last N days."""
         from datetime import datetime, timedelta, timezone
+
         since = (datetime.now(timezone.utc) - timedelta(days=since_days)).isoformat()
         data = self._get(
-            f"/repos/{owner}/{repo}/commits",
-            params={"since": since, "per_page": 100}
+            f"/repos/{owner}/{repo}/commits", params={"since": since, "per_page": 100}
         )
         if data is None:
             return 0
@@ -64,7 +68,7 @@ class GitHubClient:
         """Return number of unique contributors."""
         data = self._get(
             f"/repos/{owner}/{repo}/contributors",
-            params={"per_page": 100, "anon": "true"}
+            params={"per_page": 100, "anon": "true"},
         )
         if data is None:
             return 0
@@ -85,8 +89,8 @@ class GitHubClient:
         if not repo_info:
             return {"score": 0, "flags": ["repo_not_found"], "breakdown": {}}
 
-        from datetime import datetime, timezone
         import math
+        from datetime import datetime, timezone
 
         # --- commit_frequency (0–30) ---
         commit_count = self.get_commits(owner, repo, since_days=30)
@@ -114,12 +118,12 @@ class GitHubClient:
 
         # --- has_readme (0–10) ---
         # README presence is indicated by repo_info existing and not having empty description
-        has_readme_data = self._get(
-            f"/repos/{owner}/{repo}/contents/README.md"
-        )
+        has_readme_data = self._get(f"/repos/{owner}/{repo}/contents/README.md")
         readme_score = 10 if has_readme_data else 0
 
-        total = commit_score + contributor_score + recency_score + star_score + readme_score
+        total = (
+            commit_score + contributor_score + recency_score + star_score + readme_score
+        )
         flags = []
         if commit_count == 0:
             flags.append("no_recent_commits")

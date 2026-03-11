@@ -1,10 +1,13 @@
-import requests
-from typing import List, Dict, Any
-from src.utils.rate_limiter import RateLimiter
 import logging
+from typing import Any, Dict, List
+
+import requests
 from loguru import logger
 
+from src.utils.rate_limiter import RateLimiter
+
 # logger = logging.getLogger(__name__)
+
 
 class GeckoTerminalClient:
     BASE_URL = "https://api.geckoterminal.com/api/v2"
@@ -19,7 +22,7 @@ class GeckoTerminalClient:
         params = {"page": page}
         headers = {
             "User-Agent": "TokenDiscoveryPipeline/1.0",
-            "Accept": "application/json"
+            "Accept": "application/json",
         }
         try:
             response = requests.get(url, params=params, headers=headers)

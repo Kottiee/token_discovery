@@ -26,6 +26,34 @@ ranking:
     community: 0.10
   top_n: 10
 
+fundamentals:
+  enabled: true
+
+sentiment:
+  enabled: true
+  hot_narratives:
+    - name: "AI"
+      weight: 1.0
+    - name: "RWA"
+      weight: 0.9
+    - name: "DePIN"
+      weight: 0.85
+    - name: "Meme"
+      weight: 0.7
+    - name: "GameFi"
+      weight: 0.6
+    - name: "DeFi"
+      weight: 0.65
+    - name: "L1/L2"
+      weight: 0.6
+
 notifications:
-  discord_webhook_url: ""
-  notion_api_key: ""
+  discord_webhook_url: "${DISCORD_WEBHOOK_URL}"
+  notion_api_key: "${NOTION_API_KEY}"
+  notion_database_id: "${NOTION_DATABASE_ID}"
+
+logging:
+  level: "INFO"
+  file: "token_pipeline.log"
+  rotation: "10 MB"
+  retention: 5

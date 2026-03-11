@@ -1,0 +1,52 @@
+# fly.toml — Fly.io deployment for Token Discovery Pipeline
+# Free tier: shared-cpu-1x, 256MB RAM
+# Cost estimate: ~$0/month (within free allowance)
+# Docs: https://fly.io/docs/reference/configuration/
+
+app = "token-pipeline"
+primary_region = "nrt"   # Tokyo — change to nearest region
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PIPELINE_MODE = "scheduler"
+  # DATABASE_URL is set via fly secrets (sqlite path mounted to /data)
+
+[mounts]
+  # Persistent volume for SQLite database
+  # Create with: flyctl volumes create pipeline_data --size 1 --region nrt
+  source = "pipeline_data"
+  destination = "/data"
+
+[[services]]
+  # No HTTP service needed — this is a background worker
+  # Keep this section minimal
+  internal_port = 8080
+  protocol = "tcp"
+
+  [[services.tcp_checks]]
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "30s"
+
+[checks]
+  [checks.alive]
+    type = "tcp"
+    interval = "1m"
+    timeout = "10s"
+
+# ── Machine sizing ─────────────────────────────────────────────────────────────
+# shared-cpu-1x with 256MB fits comfortably within free allowance.
+# Upgrade to 512MB if you enable parallel chain scanning.
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"
+
+# ── Secrets to set via flyctl ──────────────────────────────────────────────────
+# flyctl secrets set \
+#   ANTHROPIC_API_KEY="sk-ant-..." \
+#   GITHUB_TOKEN="ghp_..." \
+#   DISCORD_WEBHOOK_URL="https://discord.com/api/webhooks/..." \
+#   NOTION_API_KEY="secret_..." \
+#   NOTION_DATABASE_ID="..."

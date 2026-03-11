@@ -3,21 +3,21 @@ Token Discovery Pipeline — Orchestrator
 Schedules and runs all 6 pipeline layers.
 """
 
-import sys
 import os
-import uuid
 import signal
+import sys
 import time
+import uuid
 
 # Add project root to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import yaml
-from loguru import logger
 from apscheduler.schedulers.blocking import BlockingScheduler
 from apscheduler.triggers.cron import CronTrigger
+from loguru import logger
 
-from src.db import init_db, get_db
+from src.db import get_db, init_db
 from src.db.repository import TokenRepository
 from src.pipeline import (
     L1Discovery,
@@ -31,14 +31,18 @@ from src.utils.logger import setup_logger
 
 
 def _load_config() -> dict:
-    config_path = os.path.join(os.path.dirname(__file__), "..", "config", "settings.yaml")
+    config_path = os.path.join(
+        os.path.dirname(__file__), "..", "config", "settings.yaml"
+    )
     with open(config_path, "r") as f:
         raw = f.read()
 
     # Expand ${ENV_VAR} placeholders
     import re
+
     def _expand(m):
         return os.getenv(m.group(1), "")
+
     raw = re.sub(r"\$\{(\w+)\}", _expand, raw)
     return yaml.safe_load(raw)
 
@@ -51,6 +55,7 @@ def _get_repo() -> TokenRepository:
 # ──────────────────────────────────────────────────────────────────────────────
 # Job: Discovery (L1 + L2) — runs every 4 hours
 # ──────────────────────────────────────────────────────────────────────────────
+
 
 def job_discovery():
     logger.info("=== JOB: discovery_run (L1 + L2) ===")
@@ -69,7 +74,9 @@ def job_discovery():
         stats["l2_passed"] = len(l2_results)
 
         repo.finish_pipeline_run(run_id, "completed", stats)
-        logger.info(f"discovery_run done: L1={stats['l1_discovered']} L2={stats['l2_passed']}")
+        logger.info(
+            f"discovery_run done: L1={stats['l1_discovered']} L2={stats['l2_passed']}"
+        )
     except Exception as e:
         logger.error(f"discovery_run failed: {e}")
         repo.finish_pipeline_run(run_id, "failed", {"error": str(e)})
@@ -78,6 +85,7 @@ def job_discovery():
 # ──────────────────────────────────────────────────────────────────────────────
 # Job: Security (L3) — runs every 6 hours
 # ──────────────────────────────────────────────────────────────────────────────
+
 
 def job_security_scan():
     logger.info("=== JOB: security_scan (L3) ===")
@@ -95,23 +103,27 @@ def job_security_scan():
         token_list = []
         for t in pending_tokens:
             pool = repo.get_latest_pool(t.id)
-            token_list.append({
-                "token_id": t.id,
-                "chain": t.chain,
-                "contract_address": t.contract_address,
-                "symbol": t.symbol,
-                "name": t.name,
-                "liquidity_usd": pool.liquidity_usd if pool else 0,
-                "volume_24h": pool.volume_24h if pool else 0,
-                "txns_24h": pool.txns_24h if pool else 0,
-                "pool_address": pool.id if pool else "",
-            })
+            token_list.append(
+                {
+                    "token_id": t.id,
+                    "chain": t.chain,
+                    "contract_address": t.contract_address,
+                    "symbol": t.symbol,
+                    "name": t.name,
+                    "liquidity_usd": pool.liquidity_usd if pool else 0,
+                    "volume_24h": pool.volume_24h if pool else 0,
+                    "txns_24h": pool.txns_24h if pool else 0,
+                    "pool_address": pool.id if pool else "",
+                }
+            )
 
         l3 = L3Security(repo)
         l3_results = l3.run(token_list)
         stats["l3_passed"] = len(l3_results)
 
-        logger.info(f"security_scan done: {stats['l3_passed']}/{len(pending_tokens)} passed")
+        logger.info(
+            f"security_scan done: {stats['l3_passed']}/{len(pending_tokens)} passed"
+        )
     except Exception as e:
         logger.error(f"security_scan failed: {e}")
 
@@ -119,6 +131,7 @@ def job_security_scan():
 # ──────────────────────────────────────────────────────────────────────────────
 # Job: Deep Analysis (L4 + L5) — runs every 12 hours
 # ──────────────────────────────────────────────────────────────────────────────
+
 
 def job_deep_analysis():
     logger.info("=== JOB: deep_analysis (L4 + L5) ===")
@@ -135,19 +148,21 @@ def job_deep_analysis():
             if l3_scan is None:
                 continue  # hasn't been through L3 yet
             pool = repo.get_latest_pool(t.id)
-            token_list.append({
-                "token_id": t.id,
-                "chain": t.chain,
-                "contract_address": t.contract_address,
-                "symbol": t.symbol,
-                "name": t.name,
-                "security_score": l3_scan.score,
-                "security_flags": l3_scan.flags or [],
-                "liquidity_usd": pool.liquidity_usd if pool else 0,
-                "volume_24h": pool.volume_24h if pool else 0,
-                "txns_24h": pool.txns_24h if pool else 0,
-                "pool_address": pool.id if pool else "",
-            })
+            token_list.append(
+                {
+                    "token_id": t.id,
+                    "chain": t.chain,
+                    "contract_address": t.contract_address,
+                    "symbol": t.symbol,
+                    "name": t.name,
+                    "security_score": l3_scan.score,
+                    "security_flags": l3_scan.flags or [],
+                    "liquidity_usd": pool.liquidity_usd if pool else 0,
+                    "volume_24h": pool.volume_24h if pool else 0,
+                    "txns_24h": pool.txns_24h if pool else 0,
+                    "pool_address": pool.id if pool else "",
+                }
+            )
 
         if not token_list:
             logger.info("deep_analysis: no pending tokens")
@@ -161,7 +176,9 @@ def job_deep_analysis():
         l5_results = l5.run(l4_results)
         stats["l5_processed"] = len(l5_results)
 
-        logger.info(f"deep_analysis done: L4={stats['l4_processed']} L5={stats['l5_processed']}")
+        logger.info(
+            f"deep_analysis done: L4={stats['l4_processed']} L5={stats['l5_processed']}"
+        )
     except Exception as e:
         logger.error(f"deep_analysis failed: {e}")
 
@@ -169,6 +186,7 @@ def job_deep_analysis():
 # ──────────────────────────────────────────────────────────────────────────────
 # Job: Daily Report (L6) — runs once per day at 08:00 UTC
 # ──────────────────────────────────────────────────────────────────────────────
+
 
 def job_daily_report():
     logger.info("=== JOB: daily_report (L6) ===")
@@ -191,26 +209,36 @@ def job_daily_report():
 
             l5_details = (l5_scan.details or {}) if l5_scan else {}
 
-            token_list.append({
-                "token_id": t.id,
-                "chain": t.chain,
-                "contract_address": t.contract_address,
-                "symbol": t.symbol,
-                "name": t.name,
-                "security_score": scores.get("L3", 0),
-                "fundamentals_score": scores.get("L4", 0),
-                "narrative_score": l5_details.get("narrative_score", scores.get("L5", 0)),
-                "community_score": l5_details.get("community_score", 0),
-                "security_flags": (l3_scan.flags or []) if l3_scan else [],
-                "fundamentals_flags": (l4_scan.flags or []) if l4_scan else [],
-                "sentiment_flags": (l5_scan.flags or []) if l5_scan else [],
-                "narrative_category": l5_details.get("narrative_category", "Other"),
-                "ai_summary": (l4_scan.details or {}).get("ai_analysis", {}).get("summary", "") if l4_scan else "",
-                "liquidity_usd": pool.liquidity_usd if pool else 0,
-                "volume_24h": pool.volume_24h if pool else 0,
-                "txns_24h": pool.txns_24h if pool else 0,
-                "pool_address": pool.id if pool else "",
-            })
+            token_list.append(
+                {
+                    "token_id": t.id,
+                    "chain": t.chain,
+                    "contract_address": t.contract_address,
+                    "symbol": t.symbol,
+                    "name": t.name,
+                    "security_score": scores.get("L3", 0),
+                    "fundamentals_score": scores.get("L4", 0),
+                    "narrative_score": l5_details.get(
+                        "narrative_score", scores.get("L5", 0)
+                    ),
+                    "community_score": l5_details.get("community_score", 0),
+                    "security_flags": (l3_scan.flags or []) if l3_scan else [],
+                    "fundamentals_flags": (l4_scan.flags or []) if l4_scan else [],
+                    "sentiment_flags": (l5_scan.flags or []) if l5_scan else [],
+                    "narrative_category": l5_details.get("narrative_category", "Other"),
+                    "ai_summary": (
+                        (l4_scan.details or {})
+                        .get("ai_analysis", {})
+                        .get("summary", "")
+                        if l4_scan
+                        else ""
+                    ),
+                    "liquidity_usd": pool.liquidity_usd if pool else 0,
+                    "volume_24h": pool.volume_24h if pool else 0,
+                    "txns_24h": pool.txns_24h if pool else 0,
+                    "pool_address": pool.id if pool else "",
+                }
+            )
 
         if not token_list:
             logger.info("daily_report: no fully-analyzed tokens yet")
@@ -226,6 +254,7 @@ def job_daily_report():
 # ──────────────────────────────────────────────────────────────────────────────
 # Job: Waitlist Check — runs every hour
 # ──────────────────────────────────────────────────────────────────────────────
+
 
 def job_waitlist_check():
     logger.info("=== JOB: waitlist_check ===")
@@ -249,6 +278,7 @@ def job_waitlist_check():
 # Job: Weekly Cleanup
 # ──────────────────────────────────────────────────────────────────────────────
 
+
 def job_cleanup():
     logger.info("=== JOB: cleanup ===")
     repo = _get_repo()
@@ -262,6 +292,7 @@ def job_cleanup():
 # ──────────────────────────────────────────────────────────────────────────────
 # Entry point
 # ──────────────────────────────────────────────────────────────────────────────
+
 
 def run_once():
     """Run all layers once (for manual / CI testing)."""
@@ -280,19 +311,29 @@ def run_scheduler():
     scheduler = BlockingScheduler(timezone="UTC")
 
     # Discovery: every 4 hours
-    scheduler.add_job(job_discovery, CronTrigger.from_crontab("0 */4 * * *"), id="discovery_run")
+    scheduler.add_job(
+        job_discovery, CronTrigger.from_crontab("0 */4 * * *"), id="discovery_run"
+    )
 
     # Security scan: every 6 hours
-    scheduler.add_job(job_security_scan, CronTrigger.from_crontab("30 */6 * * *"), id="security_scan")
+    scheduler.add_job(
+        job_security_scan, CronTrigger.from_crontab("30 */6 * * *"), id="security_scan"
+    )
 
     # Deep analysis: every 12 hours
-    scheduler.add_job(job_deep_analysis, CronTrigger.from_crontab("0 */12 * * *"), id="deep_analysis")
+    scheduler.add_job(
+        job_deep_analysis, CronTrigger.from_crontab("0 */12 * * *"), id="deep_analysis"
+    )
 
     # Daily report: 08:00 UTC
-    scheduler.add_job(job_daily_report, CronTrigger.from_crontab("0 8 * * *"), id="daily_report")
+    scheduler.add_job(
+        job_daily_report, CronTrigger.from_crontab("0 8 * * *"), id="daily_report"
+    )
 
     # Waitlist check: every hour
-    scheduler.add_job(job_waitlist_check, CronTrigger.from_crontab("0 * * * *"), id="waitlist_check")
+    scheduler.add_job(
+        job_waitlist_check, CronTrigger.from_crontab("0 * * * *"), id="waitlist_check"
+    )
 
     # Weekly cleanup: Sunday 03:00 UTC
     scheduler.add_job(job_cleanup, CronTrigger.from_crontab("0 3 * * 0"), id="cleanup")

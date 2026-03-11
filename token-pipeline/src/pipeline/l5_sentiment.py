@@ -1,12 +1,13 @@
-from typing import List, Dict, Any
 from datetime import datetime, timezone
+from typing import Any, Dict, List
 
 import yaml
 from loguru import logger
 
-from .base import PipelineLayer
 from src.clients.claude_agent import ClaudeAgent
 from src.db.repository import TokenRepository
+
+from .base import PipelineLayer
 
 
 class L5Sentiment(PipelineLayer):
@@ -55,7 +56,8 @@ class L5Sentiment(PipelineLayer):
                 ai_result = self.claude.analyze_narrative(
                     token_name=name,
                     token_symbol=symbol,
-                    description=token_data.get("ai_summary") or token_data.get("description"),
+                    description=token_data.get("ai_summary")
+                    or token_data.get("description"),
                 )
                 narrative_category = ai_result.get("narrative_category", "Other")
                 narrative_alignment = ai_result.get("narrative_alignment", 30)
@@ -63,7 +65,9 @@ class L5Sentiment(PipelineLayer):
                 community_health_est = ai_result.get("community_health", 30)
 
                 # Narrative score: blend AI alignment with hot-narrative weight boost
-                hot_weight = self._get_narrative_weight(narrative_category, hot_narratives)
+                hot_weight = self._get_narrative_weight(
+                    narrative_category, hot_narratives
+                )
                 # narrative_score = alignment * hot_weight, capped at 100
                 narrative_score = round(min(100, narrative_alignment * hot_weight), 2)
 
@@ -88,14 +92,16 @@ class L5Sentiment(PipelineLayer):
                     "competitive_summary": ai_result.get("competitive_summary", ""),
                 }
 
-                self.repository.add_scan_result({
-                    "token_id": token_id,
-                    "layer": "L5",
-                    "score": narrative_score,
-                    "details": details,
-                    "flags": flags,
-                    "scanned_at": datetime.now(timezone.utc),
-                })
+                self.repository.add_scan_result(
+                    {
+                        "token_id": token_id,
+                        "layer": "L5",
+                        "score": narrative_score,
+                        "details": details,
+                        "flags": flags,
+                        "scanned_at": datetime.now(timezone.utc),
+                    }
+                )
 
                 token_data["narrative_score"] = narrative_score
                 token_data["community_score"] = community_score

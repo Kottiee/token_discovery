@@ -1,14 +1,14 @@
-from typing import List, Dict, Any
-from datetime import datetime, timezone, date
+from datetime import date, datetime, timezone
+from typing import Any, Dict, List
 
 import yaml
 from loguru import logger
 
-from .base import PipelineLayer
 from src.clients.claude_agent import ClaudeAgent
-from src.db.repository import TokenRepository
 from src.db.models import DailyRanking
+from src.db.repository import TokenRepository
 
+from .base import PipelineLayer
 
 RANK_MEDALS = ["🥇", "🥈", "🥉"] + ["🏅"] * 7
 
@@ -57,7 +57,9 @@ class L6Ranking(PipelineLayer):
         today = date.today()
         report_rows = []
 
-        for rank_idx, (total_score, breakdown, token_data) in enumerate(top_tokens, start=1):
+        for rank_idx, (total_score, breakdown, token_data) in enumerate(
+            top_tokens, start=1
+        ):
             token_id = token_data["token_id"]
             symbol = token_data.get("symbol", "?")
             name = token_data.get("name", symbol)
@@ -80,28 +82,32 @@ class L6Ranking(PipelineLayer):
             )
 
             # Persist ranking
-            self.repository.upsert_daily_ranking({
-                "date": today,
-                "rank": rank_idx,
-                "token_id": token_id,
-                "total_score": total_score,
-                "score_breakdown": breakdown,
-                "summary": summary,
-                "risk_flags": all_flags,
-            })
+            self.repository.upsert_daily_ranking(
+                {
+                    "date": today,
+                    "rank": rank_idx,
+                    "token_id": token_id,
+                    "total_score": total_score,
+                    "score_breakdown": breakdown,
+                    "summary": summary,
+                    "risk_flags": all_flags,
+                }
+            )
 
-            report_rows.append({
-                "rank": rank_idx,
-                "symbol": symbol,
-                "name": name,
-                "chain": chain,
-                "total_score": total_score,
-                "breakdown": breakdown,
-                "summary": summary,
-                "flags": all_flags,
-                "contract_address": token_data.get("contract_address", ""),
-                "pool_address": token_data.get("pool_address", ""),
-            })
+            report_rows.append(
+                {
+                    "rank": rank_idx,
+                    "symbol": symbol,
+                    "name": name,
+                    "chain": chain,
+                    "total_score": total_score,
+                    "breakdown": breakdown,
+                    "summary": summary,
+                    "flags": all_flags,
+                    "contract_address": token_data.get("contract_address", ""),
+                    "pool_address": token_data.get("pool_address", ""),
+                }
+            )
 
             logger.info(
                 f"{RANK_MEDALS[rank_idx-1]} #{rank_idx} {symbol} ({chain}): "
@@ -174,6 +180,7 @@ class L6Ranking(PipelineLayer):
         if discord_url:
             try:
                 from src.notifiers.discord import DiscordNotifier
+
                 notifier = DiscordNotifier(discord_url)
                 notifier.send_daily_report(report_date, rows)
             except Exception as e:
@@ -182,6 +189,7 @@ class L6Ranking(PipelineLayer):
         if notion_key and notion_db:
             try:
                 from src.notifiers.notion import NotionNotifier
+
                 notifier = NotionNotifier(notion_key, notion_db)
                 notifier.send_daily_report(report_date, rows)
             except Exception as e:

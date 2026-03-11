@@ -1,7 +1,9 @@
+from typing import Any, Dict, List, Optional
+
 import requests
-from typing import Dict, Any, List, Optional
-from src.utils.rate_limiter import RateLimiter
 from loguru import logger
+
+from src.utils.rate_limiter import RateLimiter
 
 
 class DexPaprikaClient:
@@ -10,6 +12,7 @@ class DexPaprikaClient:
     Free tier, no API key required.
     Docs: https://api.dexpaprika.com
     """
+
     BASE_URL = "https://api.dexpaprika.com"
 
     # DexPaprika network IDs for supported chains
@@ -54,7 +57,7 @@ class DexPaprikaClient:
 
         data = self._get(
             f"/networks/{network}/pools",
-            params={"sort": "added_at", "order": "desc", "limit": limit}
+            params={"sort": "added_at", "order": "desc", "limit": limit},
         )
         if not data:
             return []
@@ -79,10 +82,13 @@ class DexPaprikaClient:
             quote_tok = tokens[1]
 
             from datetime import datetime, timezone
+
             created_str = pool.get("added_at") or pool.get("created_at")
             if created_str:
                 try:
-                    created_at = datetime.fromisoformat(created_str.replace("Z", "+00:00"))
+                    created_at = datetime.fromisoformat(
+                        created_str.replace("Z", "+00:00")
+                    )
                 except Exception:
                     created_at = datetime.now(timezone.utc)
             else:

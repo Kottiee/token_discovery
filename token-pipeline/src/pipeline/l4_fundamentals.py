@@ -1,14 +1,15 @@
 import re
-from typing import List, Dict, Any, Optional, Tuple
 from datetime import datetime, timezone
+from typing import Any, Dict, List, Optional, Tuple
 
 import yaml
 from loguru import logger
 
-from .base import PipelineLayer
-from src.clients.github_client import GitHubClient
 from src.clients.claude_agent import ClaudeAgent
+from src.clients.github_client import GitHubClient
 from src.db.repository import TokenRepository
+
+from .base import PipelineLayer
 
 
 def _extract_github_owner_repo(url: str) -> Optional[Tuple[str, str]]:
@@ -76,14 +77,16 @@ class L4Fundamentals(PipelineLayer):
                     "ai_score": ai_score,
                 }
 
-                self.repository.add_scan_result({
-                    "token_id": token_id,
-                    "layer": "L4",
-                    "score": fundamentals_score,
-                    "details": details,
-                    "flags": flags,
-                    "scanned_at": datetime.now(timezone.utc),
-                })
+                self.repository.add_scan_result(
+                    {
+                        "token_id": token_id,
+                        "layer": "L4",
+                        "score": fundamentals_score,
+                        "details": details,
+                        "flags": flags,
+                        "scanned_at": datetime.now(timezone.utc),
+                    }
+                )
 
                 token_data["fundamentals_score"] = fundamentals_score
                 token_data["fundamentals_flags"] = flags

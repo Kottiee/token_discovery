@@ -1,10 +1,13 @@
-import requests
-from typing import List, Dict, Any
-from src.utils.rate_limiter import RateLimiter
 import logging
+from typing import Any, Dict, List
+
+import requests
 from loguru import logger
 
+from src.utils.rate_limiter import RateLimiter
+
 # logger = logging.getLogger(__name__)
+
 
 class DexScreenerClient:
     BASE_URL = "https://api.dexscreener.com"
@@ -35,7 +38,9 @@ class DexScreenerClient:
             logger.error(f"DexScreener API error: {e}")
             return []
 
-    def get_pairs_by_chain_and_pair(self, chainId: str, pairId: str) -> List[Dict[str, Any]]:
+    def get_pairs_by_chain_and_pair(
+        self, chainId: str, pairId: str
+    ) -> List[Dict[str, Any]]:
         self.rate_limiter.wait()
         url = f"{self.BASE_URL}/latest/dex/pairs/{chainId}/{pairId}"
         try:

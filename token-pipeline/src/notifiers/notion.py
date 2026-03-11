@@ -1,6 +1,7 @@
-import requests
-from typing import List, Dict, Any
 from datetime import date
+from typing import Any, Dict, List
+
+import requests
 from loguru import logger
 
 
@@ -54,11 +55,7 @@ class NotionNotifier:
         flags = row.get("flags", [])
         pool_addr = row.get("pool_address", "")
         chain = row.get("chain", "")
-        dex_url = (
-            f"https://dexscreener.com/{chain}/{pool_addr}"
-            if pool_addr
-            else ""
-        )
+        dex_url = f"https://dexscreener.com/{chain}/{pool_addr}" if pool_addr else ""
 
         properties: Dict[str, Any] = {
             "Name": {
@@ -99,9 +96,7 @@ class NotionNotifier:
                 timeout=15,
             )
             if resp.status_code in (400, 401, 403):
-                logger.error(
-                    f"Notion API error {resp.status_code}: {resp.text[:300]}"
-                )
+                logger.error(f"Notion API error {resp.status_code}: {resp.text[:300]}")
                 return False
             resp.raise_for_status()
             return True

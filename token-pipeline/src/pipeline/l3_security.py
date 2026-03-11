@@ -1,11 +1,15 @@
-import yaml
-from loguru import logger
 import json
 from datetime import datetime, timezone
-from typing import List, Dict, Any
-from .base import PipelineLayer
-from src.db.repository import TokenRepository
+from typing import Any, Dict, List
+
+import yaml
+from loguru import logger
+
 from src.clients.goplus import GoPlusClient
+from src.db.repository import TokenRepository
+
+from .base import PipelineLayer
+
 
 class L3Security(PipelineLayer):
     def __init__(self, repository: TokenRepository):
@@ -24,9 +28,9 @@ class L3Security(PipelineLayer):
 
         scanned_tokens = []
         rules = self.config["security"]
-        
+
         logger.info(f"--- L3 Security Scan Start (Input: {len(input_data)}) ---")
-        
+
         # Group by chain to batch requests
         tokens_by_chain = {}
         for t in input_data:
@@ -34,34 +38,36 @@ class L3Security(PipelineLayer):
             if chain not in tokens_by_chain:
                 tokens_by_chain[chain] = []
             tokens_by_chain[chain].append(t)
-        
+
         for chain, tokens in tokens_by_chain.items():
             logger.info(f"Running Security Scan for {len(tokens)} tokens on {chain}...")
-            
+
             # Batch process (GoPlus might have limits on batch size, e.g. 30?)
             batch_size = 10
             for i in range(0, len(tokens), batch_size):
-                batch = tokens[i:i+batch_size]
+                batch = tokens[i : i + batch_size]
                 addresses = [t["contract_address"] for t in batch]
-                
+
                 try:
                     # Note: GoPlus Client implementation for batch is assumed to return dict {address: info}
                     # Need to check GoPlusClient implementation if it handles batch correctly.
                     # The current dummy implementation in goplus.py supports list of addresses.
-                    
+
                     # However, GoPlus API returns might use different keys (lower case address etc.)
                     # We need to be careful with matching.
-                    
+
                     security_results = self.client.token_security(chain, addresses)
-                    
+
                     # If GoPlus returns list (some endpoints do), convert to dict
                     # But for now assuming dict based on goplus.py impl intent.
-                    
+
                     # Normalize security_results keys to lowercase
                     normalized_results = {}
                     if isinstance(security_results, dict):
-                        normalized_results = {k.lower(): v for k, v in security_results.items()}
-                    
+                        normalized_results = {
+                            k.lower(): v for k, v in security_results.items()
+                        }
+
                     for token_data in batch:
                         address = token_data["contract_address"]
                         symbol = token_data.get("symbol", "UNKNOWN")
@@ -74,32 +80,40 @@ class L3Security(PipelineLayer):
                             continue
 
                         score, flags = self._calculate_score(sec_info)
-                        
+
                         token_id = token_data["token_id"]
-                        
+
                         # Save result
-                        self.repository.add_scan_result({
-                            "token_id": token_id,
-                            "layer": "L3",
-                            "score": score,
-                            "details": sec_info, # SQLAlchemy handles JSON
-                            "flags": flags,
-                            "scanned_at": datetime.now(timezone.utc)
-                        })
-                        
+                        self.repository.add_scan_result(
+                            {
+                                "token_id": token_id,
+                                "layer": "L3",
+                                "score": score,
+                                "details": sec_info,  # SQLAlchemy handles JSON
+                                "flags": flags,
+                                "scanned_at": datetime.now(timezone.utc),
+                            }
+                        )
+
                         if score < rules["drop_threshold"]:
-                             self.repository.update_token_status(token_id, "dropped", "security_fail")
-                             logger.info(f"❌ [DROP] {symbol} ({token_id}): Score {score:.0f} < {rules['drop_threshold']} | Flags: {flags}")
+                            self.repository.update_token_status(
+                                token_id, "dropped", "security_fail"
+                            )
+                            logger.info(
+                                f"❌ [DROP] {symbol} ({token_id}): Score {score:.0f} < {rules['drop_threshold']} | Flags: {flags}"
+                            )
                         else:
-                             token_data["security_score"] = score
-                             token_data["security_flags"] = flags
-                             scanned_tokens.append(token_data)
-                             logger.info(f"✅ [PASS] {symbol} ({token_id}): Score {score:.0f} | Flags: {flags}")
+                            token_data["security_score"] = score
+                            token_data["security_flags"] = flags
+                            scanned_tokens.append(token_data)
+                            logger.info(
+                                f"✅ [PASS] {symbol} ({token_id}): Score {score:.0f} | Flags: {flags}"
+                            )
 
                 except Exception as e:
                     logger.error(f"Error scanning batch on {chain}: {e}")
                     # Continue to next batch
-        
+
         logger.info(f"--- L3 Security Scan End (Passed: {len(scanned_tokens)}) ---")
         return scanned_tokens
 
@@ -110,15 +124,15 @@ class L3Security(PipelineLayer):
         """
         score = 100.0
         flags = []
-        
+
         # Mapping from GoPlus field to deduction
         # Using the rules from system_design.md
-        
+
         # Critical Risks (Immediate Drop effectively)
         if str(sec_info.get("is_honeypot", "0")) == "1":
             score -= 100
             flags.append("is_honeypot")
-            
+
         # High Risks
         if str(sec_info.get("cannot_sell_all", "0")) == "1":
             score -= 80
@@ -128,7 +142,7 @@ class L3Security(PipelineLayer):
         if str(sec_info.get("can_take_back_ownership", "0")) == "1":
             score -= 40
             flags.append("can_take_back_ownership")
-            
+
         if str(sec_info.get("owner_change_balance", "0")) == "1":
             score -= 40
             flags.append("owner_change_balance")
@@ -137,19 +151,19 @@ class L3Security(PipelineLayer):
         if str(sec_info.get("is_blacklisted", "0")) == "1":
             score -= 30
             flags.append("is_blacklisted")
-            
+
         if str(sec_info.get("is_proxy", "0")) == "1":
             score -= 20
             flags.append("is_proxy")
-            
+
         if str(sec_info.get("is_mintable", "0")) == "1":
             score -= 15
             flags.append("is_mintable")
-            
+
         if str(sec_info.get("hidden_owner", "0")) == "1":
             score -= 15
             flags.append("hidden_owner")
-            
+
         if str(sec_info.get("external_call", "0")) == "1":
             score -= 10
             flags.append("external_call")

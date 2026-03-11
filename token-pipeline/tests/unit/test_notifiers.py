@@ -1,7 +1,9 @@
 """Unit tests for Discord and Notion notifiers."""
-import pytest
-from unittest.mock import MagicMock, patch
+
 from datetime import date
+from unittest.mock import MagicMock, patch
+
+import pytest
 
 
 def _sample_rows():
@@ -34,6 +36,7 @@ class TestDiscordNotifier:
         mock_post.return_value.raise_for_status = MagicMock()
 
         from src.notifiers.discord import DiscordNotifier
+
         notifier = DiscordNotifier("https://discord.com/api/webhooks/test")
         ok = notifier.send_daily_report(date.today(), _sample_rows())
 
@@ -45,15 +48,18 @@ class TestDiscordNotifier:
     @patch("requests.post")
     def test_returns_false_on_error(self, mock_post):
         import requests
+
         mock_post.side_effect = requests.RequestException("connection error")
 
         from src.notifiers.discord import DiscordNotifier
+
         notifier = DiscordNotifier("https://discord.com/api/webhooks/test")
         ok = notifier.send_daily_report(date.today(), _sample_rows())
         assert ok is False
 
     def test_empty_rows(self):
         from src.notifiers.discord import DiscordNotifier
+
         notifier = DiscordNotifier("https://discord.com/api/webhooks/test")
         ok = notifier.send_daily_report(date.today(), [])
         assert ok is False
@@ -66,6 +72,7 @@ class TestNotionNotifier:
         mock_post.return_value.raise_for_status = MagicMock()
 
         from src.notifiers.notion import NotionNotifier
+
         notifier = NotionNotifier("secret_key", "database_id_123")
         ok = notifier.send_daily_report(date.today(), _sample_rows())
 
@@ -79,12 +86,11 @@ class TestNotionNotifier:
 
     @patch("requests.post")
     def test_handles_403(self, mock_post):
-        mock_post.return_value = MagicMock(
-            status_code=403, text="Unauthorized"
-        )
+        mock_post.return_value = MagicMock(status_code=403, text="Unauthorized")
         mock_post.return_value.raise_for_status = MagicMock()
 
         from src.notifiers.notion import NotionNotifier
+
         notifier = NotionNotifier("bad_key", "db_id")
         ok = notifier.send_daily_report(date.today(), _sample_rows())
         assert ok is False

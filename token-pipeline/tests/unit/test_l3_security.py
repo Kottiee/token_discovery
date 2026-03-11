@@ -1,17 +1,25 @@
 """Unit tests for L3 Security layer scoring logic."""
-import pytest
+
 from unittest.mock import MagicMock, patch
+
+import pytest
 
 
 @pytest.fixture
 def l3(mock_repo):
-    with patch("builtins.open", MagicMock(return_value=MagicMock(
-        __enter__=lambda s: s,
-        __exit__=MagicMock(return_value=False),
-        read=MagicMock(return_value=""),
-    ))):
+    with patch(
+        "builtins.open",
+        MagicMock(
+            return_value=MagicMock(
+                __enter__=lambda s: s,
+                __exit__=MagicMock(return_value=False),
+                read=MagicMock(return_value=""),
+            )
+        ),
+    ):
         with patch("yaml.safe_load", return_value={"security": {"drop_threshold": 40}}):
             from src.pipeline.l3_security import L3Security
+
             inst = L3Security.__new__(L3Security)
             inst.repository = mock_repo
             inst.config = {"security": {"drop_threshold": 40}}
@@ -29,6 +37,7 @@ def mock_repo():
 class TestL3SecurityScoring:
     def _score(self, sec_info):
         from src.pipeline.l3_security import L3Security
+
         inst = L3Security.__new__(L3Security)
         return inst._calculate_score(sec_info)
 
@@ -54,9 +63,9 @@ class TestL3SecurityScoring:
 
     def test_multiple_flags_cumulative(self):
         sec_info = {
-            "is_mintable": "1",      # -15
-            "hidden_owner": "1",     # -15
-            "is_proxy": "1",         # -20
+            "is_mintable": "1",  # -15
+            "hidden_owner": "1",  # -15
+            "is_proxy": "1",  # -20
         }
         score, flags = self._score(sec_info)
         assert score == 50.0

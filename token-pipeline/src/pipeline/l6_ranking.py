@@ -1,3 +1,5 @@
+import os
+import re
 from datetime import date, datetime, timezone
 from typing import Any, Dict, List
 
@@ -29,8 +31,17 @@ class L6Ranking(PipelineLayer):
         self.config = self._load_config()
 
     def _load_config(self) -> Dict:
-        with open("config/settings.yaml", "r") as f:
-            return yaml.safe_load(f)
+        config_path = os.path.join(
+            os.path.dirname(__file__), "..", "..", "config", "settings.yaml"
+        )
+        with open(config_path, "r") as f:
+            raw = f.read()
+
+        def _expand(m):
+            return os.environ.get(m.group(1), "")
+
+        raw = re.sub(r"\$\{(\w+)\}", _expand, raw)
+        return yaml.safe_load(raw)
 
     def run(self, input_data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         if not input_data:
